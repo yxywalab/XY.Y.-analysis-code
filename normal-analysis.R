@@ -1,1 +1,110 @@
+library(Seurat)
+# packageVersion("Seurat")
+library(ggplot2) 
+library(RColorBrewer)
+library(tidyverse) 
+library(gridExtra)
+library(Matrix)
+library(patchwork) 
+library(R.utils)
+library(SeuratObject)
+library(SeuratData) 
+library(magrittr) 
+library(patchwork) 
+library(data.table) 
+library(SingleCellExperiment) 
+library(scater) 
+library(DropletUtils) 
+library(parallel) 
+library(BiocParallel) 
+library(future)
+library(cowplot)
+library(pheatmap)
+library(patchwork)
+library(devtools)
+library(ComplexHeatmap)
+library(tidyverse)
+library(viridis)
+library(RColorBrewer)
+library(presto)
+library(BuenColors)
+library(reticulate)
+library(viridis)
+library(tidyr)
+library(magrittr)
+library(reshape2)
+library(readxl)
+library(gplots)
+library(tibble)
+library(monocle)
+library(monocle3)
+library(SeuratWrappers)
+
+scRNA <- CreateSeuratObject(counts = counts, meta.data =annotation) 
+scRNA[["percent.mt"]] <- PercentageFeatureSet(scRNA, pattern = "^mt-") 
+scRNA[["percent.rb"]] <- PercentageFeatureSet(scRNA, pattern = "^Rp[sl]") 
+scRNA[["percent.ercc"]] <- PercentageFeatureSet(scRNA, pattern = "^Ercc") 
+scRNA$log10GenesPerUMI <- log10(scRNA$nFeature_RNA) / log10(scRNA$nCount_RNA) 
+scRNA$mitoRatio <- PercentageFeatureSet(object = scRNA, pattern = "^mt-") 
+scRNA$mitoRatio <- scRNA@meta.data$mitoRatio / 100 
+head(scRNA@meta.data) 
+VlnPlot(scRNA, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3) 
+FeatureScatter(scRNA, feature1 = "nCount_RNA", feature2 = "percent.mt") 
+FeatureScatter(scRNA, feature1 = "nCount_RNA", feature2 = "nFeature_RNA") 
+counts <- GetAssayData(object = scRNA, slot = "counts") 
+nonzero <- counts > 0 
+keep_genes <- Matrix::rowSums(nonzero) >= 10 
+filtered_counts <- counts[keep_genes,] 
+scRNA <- CreateSeuratObject(filtered_counts, meta.data = scRNA@meta.data) 
+scRNA <- NormalizeData(scRNA, normalization.method = "LogNormalize", scale.factor = 10000) 
+scRNA <- FindVariableFeatures(scRNA,selection.method = "vst", nfeatures = 2000) 
+VariableFeaturePlot(scRNA) 
+options(future.globals.maxSize = 10000 * 1024^2) 
+all.genes <- rownames(scRNA) 
+scRNA <- ScaleData(scRNA, features = all.genes)  
+scRNA <- ScaleData(scRNA) 
+s.genes <- cc.genes$s.genes 
+g2m.genes <- cc.genes$g2m.genes 
+scRNA <- CellCycleScoring(scRNA, s.features = s.genes, g2m.features = g2m.genes, set.ident = TRUE) 
+head(scRNA[[]]) 
+RidgePlot(scRNA, features = c("PCNA", "TOP2A", "MCM6", "MKI67"), ncol = 2) 
+scRNA <- RunPCA(scRNA, features = c(s.genes, g2m.genes)) 
+DimPlot(scRNA) 
+scRNA <- ScaleData(scRNA, vars.to.regress = c("S.Score", "G2M.Score"), features = rownames(scRNA)) 
+scRNA <- RunPCA(scRNA, features = VariableFeatures(scRNA), nfeatures.print = 10)
+scRNA <- RunPCA(scRNA, features = c(s.genes, g2m.genes)) 
+DimPlot(scRNA,raster=FALSE) 
+scRNA <- RunPCA(scRNA, features = VariableFeatures(object = scRNA)) 
+DimPlot(scRNA) 
+VizDimLoadings(scRNA, dims = 1:9, reduction = "pca") 
+DimHeatmap(scRNA, dims = 1:6, nfeatures = 20, cells = 500, balanced = T) 
+scRNA <- JackStraw(scRNA, num.replicate = 100) 
+scRNA <- ScoreJackStraw(scRNA, dims = 1:20) 
+JackStrawPlot(scRNA, dims = 1:20) 
+ElbowPlot(scRNA, ndims = 40) 
+scRNA <- RunPCA(scRNA) 
+PCAPlot(scRNA,split.by = "sample") 
+scRNA <- FindNeighbors(scRNA, dims = 1:20) 
+scRNA <- FindClusters(scRNA, resolution = c(0.2))
+scRNA <- RunUMAP(scRNA, dims = 1:20)
+scRNA <- NormalizeData(scRNA, verbose = FALSE) 
+FeaturePlot(scRNA,reduction = "umap", order = TRUE, min.cutoff = 'q10', features = c("CD3D", "CD8A"), label = TRUE) 
+DefaultAssay(scRNA) <- "RNA" 
+scRNA <- NormalizeData(scRNA, normalization.method = "LogNormalize", scale.factor = 10000) 
+scRNA <- FindVariableFeatures(scRNA,selection.method = "vst", nfeatures = 2000) 
+all.genes <- rownames(scRNA) 
+scRNA <- ScaleData(scRNA, features = all.genes) 
+scRNA.markers <- FindAllMarkers(scRNA, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25) 
+
+
+
+
+
+
+
+
+
+
+
+
 
