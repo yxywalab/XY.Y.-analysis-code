@@ -1,3 +1,37 @@
+#' Calculate cell type diversity and distribution similarity metrics
+#'
+#' This function analyzes single-cell RNA-seq metadata to calculate:
+#' 1. Shannon diversity index for each data source
+#' 2. Jensen-Shannon divergence between each source and average distribution
+#' 3. Multidimensional scaling (MDS) of cell type distributions
+#'
+#' @param scRNA A Seurat object containing single-cell RNA-seq data with
+#' metadata columns 'source' (data source identifier) and 'celltype' (cell type annotation)
+#'
+#' @return A list containing three ggplot objects:
+#' \itemize{
+#' \item{p_diversity}{Bar plot of Shannon diversity indices by source}
+#' \item{p_similarity}{Bar plot of similarity scores to average distribution}
+#' \item{p_mds}{MDS plot showing distribution of sources in 2D space}
+#' }
+#'
+#' @details
+#' The function performs three complementary analyses:
+#' 1. Diversity Analysis: Calculates Shannon diversity index to quantify
+#' the richness and evenness of cell types within each data source
+#' 2. Similarity Analysis: Computes Jensen-Shannon divergence between each
+#' source's cell type distribution and the average distribution across all sources
+#' 3. Dimensionality Reduction: Performs MDS to visualize sources in 2D space
+#' based on Euclidean distances of their cell type distributions
+#'
+#' @examples
+#' \dontrun{
+#' results <- analyze_celltype_diversity(scRNA_object)
+#' results$p_diversity | results$p_similarity | results$p_mds
+#' }
+#'
+#' @export
+library(vegan) 
 library(vegan)    
 library(philentropy) 
 library(ggplot2)
